@@ -39,7 +39,7 @@ public class MapCreator {
 			int x = Character.getNumericValue(line.charAt(2));
 			int y = Character.getNumericValue(line.charAt(3));
 			if (line.charAt(0) == 'm') {
-				gameManager.add(new GameMap(mapRef, x, y));
+				gameManager.add(new GameMap(world.getName(),mapRef, x, y));
 				mapRef++;
 			} else if (line.charAt(0) == 's') {
 				gameManager.get(mapRef).add(new Space(), x, y);

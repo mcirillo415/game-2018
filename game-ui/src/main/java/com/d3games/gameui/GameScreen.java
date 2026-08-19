@@ -40,15 +40,23 @@ public class GameScreen extends JPanel implements ActionListener {
 	public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
+		GameMap playerMap = player.getMap();
+
+		String worldName = playerMap.getWorldName();
+		if (worldName != null && !worldName.isEmpty()) {
+			g2d.setColor(Color.WHITE);
+			g2d.drawString(worldName + " - Map " + playerMap.getId(), 50, 22);
+		}
 
 		g2d.setColor(Color.WHITE);
 		g2d.drawRect(45, 45, 260, 260);
 
 		if (gameMode == GameMode.WORLD_MAP) {
-			GameMap playerMap = player.getMap();
 			paintMapPlayerFixed(playerMap, g2d);
 		} else if (gameMode == GameMode.MENU) {
 			paintMenu(g2d);
+		} else if (gameMode == GameMode.BATTLE) {
+			paintBattleMenu(g2d);
 		}
 
 		if (message != null) {
@@ -67,6 +75,26 @@ public class GameScreen extends JPanel implements ActionListener {
 		for (String item : activeMenu.getDisplayNames()) {
 			String selector = activeMenu.getSelected().equals(item) ? "> " : "    ";
 			g2d.drawString(selector + item, 75, 75 + 25 * counter);
+			counter++;
+		}
+	}
+
+	private void paintBattleMenu(Graphics2D g2d) {
+		int menuX = 45;
+		int menuY = getHeight() - 120;
+		int menuWidth = 260;
+		int menuHeight = 105;
+
+		g2d.setColor(Color.WHITE);
+		g2d.drawRect(menuX, menuY, menuWidth, menuHeight);
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(menuX + 5, menuY + 5, menuWidth - 10, menuHeight - 10);
+		g2d.setColor(Color.WHITE);
+		g2d.drawString("=== BATTLE ===", 75, menuY + 25);
+		int counter = 1;
+		for (String item : activeMenu.getDisplayNames()) {
+			String selector = activeMenu.getSelected().equals(item) ? "> " : "    ";
+			g2d.drawString(selector + item, 75, menuY + 25 + 20 * counter);
 			counter++;
 		}
 	}
@@ -127,9 +155,16 @@ public class GameScreen extends JPanel implements ActionListener {
 						activeMenu = GameManager.getInstance().getMainMenu();
 						gameMode = GameMode.MENU;
 					}
-				} else if (gameMode == GameMode.MENU) {
+					else if (key == KeyEvent.VK_B) {
+						activeMenu = GameManager.getInstance().getMainMenu();
+						gameMode = GameMode.BATTLE;
+					}
+				}
+				else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
 					if (key == KeyEvent.VK_P)
 						gameMode = GameMode.WORLD_MAP;
+					else if (key == KeyEvent.VK_B)
+						gameMode = GameMode.BATTLE;
 					else if (key == KeyEvent.VK_UP)
 						activeMenu.up();
 					else if (key == KeyEvent.VK_DOWN)

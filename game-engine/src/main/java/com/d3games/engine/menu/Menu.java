@@ -15,6 +15,7 @@ public class Menu extends Throwable implements MenuItem {
 	private int selected = 0;
 	private Menu parentMenu;
 
+
 	public void add(String displayName, MenuItem menuItem) {
 		if (menuItem instanceof Menu)
 			((Menu) menuItem).setParentMenu(this);

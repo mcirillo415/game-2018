@@ -6,6 +6,7 @@ public class GameMap {
 	private int width = 0;
 	private int height = 0;
 	private Unit[][] map;
+	String worldName;
 
 	public GameMap(int id, int x, int y) {
 		this.id = id;
@@ -14,8 +15,20 @@ public class GameMap {
 		height = y;
 	}
 
+	public GameMap(String worldName, int id, int x, int y) {
+		this.worldName=worldName;
+		this.id = id;
+		map = new Unit[x][y];
+		width = x;
+		height = y;
+	}
+
 	public int getId() {
 		return id;
+	}
+
+	public String getWorldName() {
+		return worldName;
 	}
 
 	public void add(Unit unit, int x, int y) {
