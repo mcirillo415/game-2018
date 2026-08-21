@@ -25,6 +25,7 @@ public class ImageResources {
 		put(NPC.class, new CharacterImage(getURL("dog.png")));
 		put(Player.class, "playerFront.png", "playerBack.png", "playerLeft.png", "playerRight.png");
 	}
+	private static SimpleImage battleEnemy = new SimpleImage(getURL("dog.png"));
 	
 	private static void put(Class<? extends Unit> clazz, String imagePath) {
 		put(clazz, new SimpleImage(getURL(imagePath)));
@@ -52,6 +53,10 @@ public class ImageResources {
 	
 	public static Image getImage(Player player) {
 		return characterImages.get(player.getClass()).getImage(player);
+	}
+
+	public static Image getBattleEnemyImage() {
+		return battleEnemy.getImage();
 	}
 
 }

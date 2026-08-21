@@ -33,4 +33,13 @@ public class MenuCreator {
 		GameManager.getInstance().setMainMenu(mainMenu);
 	}
 
+	public void generateBattleMenu() {
+		Menu battleMenu = new Menu();
+		GameManager.getInstance().setInventoryMenu(new InventoryMenu());
+		battleMenu.add("Attack", new AttackItem());
+		battleMenu.add("Bag", new InventoryItem());
+		battleMenu.add("Run", new EscapeItem());
+		GameManager.getInstance().setBattleMenu(battleMenu);
+	}
+
 }

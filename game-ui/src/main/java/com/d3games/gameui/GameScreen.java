@@ -14,23 +14,31 @@ import javax.swing.JPanel;
 import com.d3games.engine.GameManager;
 import com.d3games.engine.GameMessage;
 import com.d3games.engine.InvalidMoveException;
+import com.d3games.engine.battle.Battle;
+import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.map.GameMap;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.map.Unit;
+import com.d3games.engine.menu.InventoryMenu;
 import com.d3games.engine.menu.Menu;
 
 public class GameScreen extends JPanel implements ActionListener {
 	private static final long serialVersionUID = 1L;
 	
 	private Menu activeMenu;
+	private Menu battleMenu;
+	private Battle battle;
 	private Player player;
 	private String message;
+	private boolean returnToBattle;
 	private GameMode gameMode = GameMode.WORLD_MAP;
 
 	public GameScreen() {
 		GameManager gameManager = GameManager.getInstance();
 		player = gameManager.getPlayer();
-		activeMenu = gameManager.getMainMenu();
+		battle = gameManager.getBattle();
+		activeMenu = gameManager.getActiveMenu();
+		battleMenu = gameManager.getBattleMenu();
 		addKeyListener(new TAdapter());
 		setFocusable(true);
 		setBackground(Color.BLACK);
@@ -56,6 +64,7 @@ public class GameScreen extends JPanel implements ActionListener {
 		} else if (gameMode == GameMode.MENU) {
 			paintMenu(g2d);
 		} else if (gameMode == GameMode.BATTLE) {
+			paintBattleGraphics(g2d);
 			paintBattleMenu(g2d);
 		}
 
@@ -92,11 +101,23 @@ public class GameScreen extends JPanel implements ActionListener {
 		g2d.setColor(Color.WHITE);
 		g2d.drawString("=== BATTLE ===", 75, menuY + 25);
 		int counter = 1;
-		for (String item : activeMenu.getDisplayNames()) {
-			String selector = activeMenu.getSelected().equals(item) ? "> " : "    ";
+		for (String item : battleMenu.getDisplayNames()) {
+			String selector = battleMenu.getSelected().equals(item) ? "> " : "    ";
 			g2d.drawString(selector + item, 75, menuY + 25 + 20 * counter);
 			counter++;
 		}
+	}
+
+	private void paintBattleGraphics(Graphics2D g2d) {
+		int menuY = getHeight() - 120;
+		int graphicsBottom = menuY - 10;
+
+		g2d.setColor(Color.WHITE);
+		g2d.drawRect(45, 45, 260, graphicsBottom - 45);
+		g2d.drawImage(ImageResources.getBattleEnemyImage(), 210, 70, 64, 64, this);
+		g2d.drawImage(ImageResources.getImage(player), 75, graphicsBottom - 75, 64, 64, this);
+		g2d.drawString("ENEMY", 215, 155);
+		g2d.drawString("PLAYER", 75, graphicsBottom - 5);
 	}
 
 	@SuppressWarnings("unused")
@@ -131,6 +152,18 @@ public class GameScreen extends JPanel implements ActionListener {
 		g2d.drawImage(ImageResources.getImage(player), 3 * 50, 3 * 50, this);
 	}
 
+	private void returnToWorldIfBattleEnded() {
+		if (battle != null && !battle.isActive()) {
+			setActiveMenu(GameManager.getInstance().getMainMenu());
+			gameMode = GameMode.WORLD_MAP;
+		}
+	}
+
+	private void setActiveMenu(Menu menu) {
+		activeMenu = menu;
+		GameManager.getInstance().setActiveMenu(menu);
+	}
+
 	public void actionPerformed(ActionEvent e) {
 		repaint();
 	}
@@ -152,19 +185,35 @@ public class GameScreen extends JPanel implements ActionListener {
 					else if (key == KeyEvent.VK_SPACE)
 						message = player.engage();
 					else if (key == KeyEvent.VK_P) {
-						activeMenu = GameManager.getInstance().getMainMenu();
+						setActiveMenu(GameManager.getInstance().getMainMenu());
 						gameMode = GameMode.MENU;
 					}
 					else if (key == KeyEvent.VK_B) {
-						activeMenu = GameManager.getInstance().getMainMenu();
+						battle = new Battle(
+							new Combatant("Player", 100),
+							new Combatant("Enemy", 80)
+						);
+						GameManager.getInstance().setBattle(battle);
+						setActiveMenu(GameManager.getInstance().getBattleMenu());
 						gameMode = GameMode.BATTLE;
 					}
 				}
 				else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
-					if (key == KeyEvent.VK_P)
+					if (key == KeyEvent.VK_P) {
+						if (returnToBattle) {
+							setActiveMenu(GameManager.getInstance().getBattleMenu());
+							gameMode = GameMode.BATTLE;
+							returnToBattle = false;
+						}
+						else {
+							setActiveMenu(GameManager.getInstance().getMainMenu());
 						gameMode = GameMode.WORLD_MAP;
-					else if (key == KeyEvent.VK_B)
+						}
+					}
+					else if (key == KeyEvent.VK_B) {
+						setActiveMenu(GameManager.getInstance().getBattleMenu());
 						gameMode = GameMode.BATTLE;
+					}
 					else if (key == KeyEvent.VK_UP)
 						activeMenu.up();
 					else if (key == KeyEvent.VK_DOWN)
@@ -173,15 +222,27 @@ public class GameScreen extends JPanel implements ActionListener {
 						activeMenu.accessSelected();
 					else if (key == KeyEvent.VK_SPACE)
 						activeMenu.triggerSelected();
-					else if (key == KeyEvent.VK_LEFT)
-						activeMenu = activeMenu.back();
+					else if (key == KeyEvent.VK_LEFT) {
+						if (returnToBattle) {
+							setActiveMenu(GameManager.getInstance().getBattleMenu());
+							gameMode = GameMode.BATTLE;
+							returnToBattle = false;
+						}
+						else
+							setActiveMenu(activeMenu.back());
+					}
 				}
 			} catch (InvalidMoveException ex) {
 				System.out.println(ex.getError());
 			} catch (Menu newMenu) {
-				activeMenu = newMenu;
+				setActiveMenu(newMenu);
+				if (newMenu instanceof InventoryMenu) {
+					gameMode = GameMode.MENU;
+					returnToBattle = true;
+				}
 			} catch (GameMessage gameMessage) {
 				message = gameMessage.getMessage();
+				returnToWorldIfBattleEnded();
 			}
 			repaint();
 		}

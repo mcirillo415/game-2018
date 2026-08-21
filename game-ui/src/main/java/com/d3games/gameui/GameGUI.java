@@ -17,6 +17,7 @@ public class GameGUI extends JFrame {
 		try {
 			MapCreator.getInstance().generateMap(world);
 			MenuCreator.getInstance().generateMenu();
+			MenuCreator.getInstance().generateBattleMenu();
 			add(new GameScreen());
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setSize(357, 380);
