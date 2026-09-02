@@ -22,7 +22,7 @@ public class MenuCreator {
 
 	public void generateMenu() {
 		mainMenu = new Menu();
-		mainMenu.add("Player Stats", new UselessItem());
+		mainMenu.add("Player Stats", new PlayerStatsItem());
 		Menu items = new Menu();
 		items.add("Pokeball", new UselessItem("What the heck is this?"));
 		items.add("Pokeflute", new UselessItem("Looks like a regular flute to me..."));

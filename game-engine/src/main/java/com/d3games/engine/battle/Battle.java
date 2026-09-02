@@ -64,6 +64,11 @@ public class Battle {
 		{
 			state = BattleState.PLAYER_WON;
 			System.out.println("Player won the battle.");
+			int experienceReward = enemy.getExperienceReward();
+			int levelsGained = player.gainExperience(experienceReward);
+			System.out.printf("%s gained %d experience.%n", player.getName(), experienceReward);
+			if (levelsGained > 0)
+				System.out.printf("%s leveled up to level %d!%n", player.getName(), player.getLevel());
 		}
 	}
 

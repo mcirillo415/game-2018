@@ -3,6 +3,7 @@ package com.d3games.engine.menu;
 import com.d3games.engine.GameManager;
 import com.d3games.engine.GameMessage;
 import com.d3games.engine.battle.Battle;
+import com.d3games.engine.battle.BattleState;
 import com.d3games.engine.battle.Combatant;
 
 public class AttackMoveItem implements MenuItem {
@@ -28,8 +29,13 @@ public class AttackMoveItem implements MenuItem {
 			throw new GameMessage("There is no active battle.");
 
 		Combatant player = battle.getPlayer();
+		Combatant enemy = battle.getEnemy();
+		int levelBeforeAttack = player.getLevel();
+
 		int damage = Math.max(1, (int) Math.round(player.getAttackPower() * damageMultiplier));
 		battle.playerAttack(damage);
+
+		boolean enemyDefeated = battle.getState() == BattleState.PLAYER_WON;
 
 		boolean tookRecoil = false;
 		int healedAmount = 0;
@@ -62,6 +68,12 @@ public class AttackMoveItem implements MenuItem {
 			resultMessage.append(" You recovered ").append(healedAmount).append(" HP!");
 		if (evaded)
 			resultMessage.append(" You dodged the counterattack!");
+		if (enemyDefeated) {
+			resultMessage.append(" ").append(enemy.getName()).append(" fainted! You gained ")
+					.append(enemy.getExperienceReward()).append(" EXP.");
+			if (player.getLevel() > levelBeforeAttack)
+				resultMessage.append(" Leveled up to level ").append(player.getLevel()).append("!");
+		}
 		throw new GameMessage(resultMessage.toString());
 	}
 }

@@ -163,14 +163,22 @@ public class GameScreen extends JPanel {
 	}
 
 	private void paintBattleGraphics(Player player, Battle battle, EnemyType enemyType, Graphics2D g2d) {
+		FontMetrics metrics = g2d.getFontMetrics();
+		int boxRight = MARGIN + MAIN_BOX_SIZE - 10;
+
 		g2d.drawImage(ImageResources.getBattleEnemyImage(enemyType), MARGIN + 165, MARGIN + 25, 64, 64, this);
 		g2d.drawImage(ImageResources.getImage(player), MARGIN + 30, MARGIN + 150, 64, 64, this);
-		g2d.drawString(battle != null ? battle.getEnemy().getName() : "ENEMY", MARGIN + 170, MARGIN + 110);
+
+		String enemyLabel = battle != null
+				? battle.getEnemy().getName() + " Lv" + battle.getEnemy().getLevel()
+				: "ENEMY";
+		g2d.drawString(enemyLabel, boxRight - metrics.stringWidth(enemyLabel), MARGIN + 110);
 		g2d.drawString("PLAYER", MARGIN + 30, MARGIN + 232);
+
 		if (battle != null) {
-			g2d.drawString("HP " + battle.getEnemy().getHealth() + "/"
-					+ battle.getEnemy().getMaximumHealth(), MARGIN + 170, MARGIN + 125);
-			g2d.drawString("HP " + battle.getPlayer().getHealth() + "/"
+			String enemyHp = "HP " + battle.getEnemy().getHealth() + "/" + battle.getEnemy().getMaximumHealth();
+			g2d.drawString(enemyHp, boxRight - metrics.stringWidth(enemyHp), MARGIN + 125);
+			g2d.drawString("Lv" + battle.getPlayer().getLevel() + "  HP " + battle.getPlayer().getHealth() + "/"
 					+ battle.getPlayer().getMaximumHealth(), MARGIN + 30, MARGIN + 247);
 		}
 	}
