@@ -18,7 +18,7 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<mainClass>com.d3games.pokemon.GameGUI</mainClass>
+							<mainClass>com.d3games.pokemon.Main</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
