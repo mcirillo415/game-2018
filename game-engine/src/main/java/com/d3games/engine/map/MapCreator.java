@@ -35,6 +35,47 @@ public class MapCreator {
 		String line;
 		while (scanner.hasNextLine()) {
 			line = scanner.nextLine();
+			if (line.indexOf(',') >= 0) {
+				String[] values = line.split(",");
+				char type = values[0].charAt(0);
+				int mapRef;
+				int x;
+				int y;
+				int valueOffset;
+				if (values[0].length() > 1) {
+					mapRef = Integer.parseInt(values[0].substring(1));
+					x = Integer.parseInt(values[1]);
+					y = Integer.parseInt(values[2]);
+					valueOffset = 3;
+				} else {
+					mapRef = Integer.parseInt(values[1]);
+					x = Integer.parseInt(values[2]);
+					y = Integer.parseInt(values[3]);
+					valueOffset = 4;
+				}
+				if (type == 'm') {
+					gameManager.add(new GameMap(world.getName(), mapRef, x, y));
+				} else if (type == 's') {
+					gameManager.get(mapRef).add(new Space(), x, y);
+				} else if (type == 'o') {
+					gameManager.get(mapRef).add(new Obstacle(), x, y);
+				} else if (type == 'w') {
+					gameManager.get(mapRef).add(new WildGrass(), x, y);
+				} else if (type == 'd') {
+					int targetRef = Integer.parseInt(values[valueOffset]);
+					int targetX = Integer.parseInt(values[valueOffset + 1]);
+					int targetY = Integer.parseInt(values[valueOffset + 2]);
+					gameManager.get(mapRef).add(
+							new Door(targetRef, targetX, targetY), x, y);
+				} else if (type == 'p') {
+					gameManager.setPlayer(new Player(gameManager.get(mapRef).get(x, y)));
+				} else if (type == 'n') {
+					boolean initiatesBattle = values.length <= valueOffset
+							|| Boolean.parseBoolean(values[valueOffset]);
+					new NPC(gameManager.get(mapRef).get(x, y), initiatesBattle);
+				}
+				continue;
+			}
 			int mapRef = Character.getNumericValue(line.charAt(1));
 			int x = Character.getNumericValue(line.charAt(2));
 			int y = Character.getNumericValue(line.charAt(3));

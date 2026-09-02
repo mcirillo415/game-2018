@@ -1,127 +1,164 @@
 package com.d3games.gameui;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 
 import javax.swing.JPanel;
 
-import com.d3games.engine.GameManager;
-import com.d3games.engine.GameMessage;
-import com.d3games.engine.InvalidMoveException;
 import com.d3games.engine.battle.Battle;
-import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.map.GameMap;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.map.Unit;
-import com.d3games.engine.menu.InventoryMenu;
+import com.d3games.engine.menu.AttackMenu;
 import com.d3games.engine.menu.Menu;
 
-public class GameScreen extends JPanel implements ActionListener {
+public class GameScreen extends JPanel {
 	private static final long serialVersionUID = 1L;
-	
-	private Menu activeMenu;
-	private Menu battleMenu;
-	private Battle battle;
-	private Player player;
-	private String message;
-	private boolean returnToBattle;
-	private GameMode gameMode = GameMode.WORLD_MAP;
+
+	private static final int MARGIN = 45;
+	private static final int MAIN_BOX_SIZE = 260;
+	private static final int MAIN_BOX_BOTTOM = MARGIN + MAIN_BOX_SIZE;
+	private static final int BOX_GAP = 10;
+	private static final int BATTLE_MENU_HEIGHT = 140;
+	private static final int BATTLE_MENU_BOTTOM = MAIN_BOX_BOTTOM + BOX_GAP + BATTLE_MENU_HEIGHT;
+	private static final int MESSAGE_Y = BATTLE_MENU_BOTTOM + 22;
+	private static final int MESSAGE_LINE_HEIGHT = 16;
+	private static final int PANEL_WIDTH = MARGIN * 2 + MAIN_BOX_SIZE;
+	private static final int PANEL_HEIGHT = MESSAGE_Y + MESSAGE_LINE_HEIGHT * 2 + 15;
+
+	private final GameController controller;
 
 	public GameScreen() {
-		GameManager gameManager = GameManager.getInstance();
-		player = gameManager.getPlayer();
-		battle = gameManager.getBattle();
-		activeMenu = gameManager.getActiveMenu();
-		battleMenu = gameManager.getBattleMenu();
-		addKeyListener(new TAdapter());
+		controller = new GameController(this::repaint);
+		addKeyListener(controller);
 		setFocusable(true);
 		setBackground(Color.BLACK);
 		setDoubleBuffered(true);
+		setFont(new Font(Font.MONOSPACED, Font.PLAIN, 13));
+	}
+
+	@Override
+	public Dimension getPreferredSize() {
+		return new Dimension(PANEL_WIDTH, PANEL_HEIGHT);
 	}
 
 	public void paint(Graphics g) {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
+		g2d.setFont(getFont());
+		Player player = controller.getPlayer();
 		GameMap playerMap = player.getMap();
 
 		String worldName = playerMap.getWorldName();
 		if (worldName != null && !worldName.isEmpty()) {
 			g2d.setColor(Color.WHITE);
-			g2d.drawString(worldName + " - Map " + playerMap.getId(), 50, 22);
+			g2d.drawString(worldName + " - Map " + playerMap.getId(), MARGIN + 5, 22);
 		}
 
 		g2d.setColor(Color.WHITE);
-		g2d.drawRect(45, 45, 260, 260);
+		g2d.drawRect(MARGIN, MARGIN, MAIN_BOX_SIZE, MAIN_BOX_SIZE);
 
+		GameMode gameMode = controller.getGameMode();
 		if (gameMode == GameMode.WORLD_MAP) {
-			paintMapPlayerFixed(playerMap, g2d);
+			paintMapPlayerFixed(playerMap, player, g2d);
 		} else if (gameMode == GameMode.MENU) {
-			paintMenu(g2d);
+			paintMenu(controller.getActiveMenu(), g2d);
 		} else if (gameMode == GameMode.BATTLE) {
-			paintBattleGraphics(g2d);
-			paintBattleMenu(g2d);
+			paintBattleGraphics(player, controller.getBattle(), controller.getEnemyType(), g2d);
+			paintBattleMenu(controller.getActiveMenu(), g2d);
+		} else if (gameMode == GameMode.GAME_OVER) {
+			paintGameOver(g2d);
 		}
 
+		String message = controller.getMessage();
 		if (message != null) {
 			g2d.setColor(Color.WHITE);
-			g2d.drawString(message, 50, 325);
+			drawWrapped(g2d, message, MARGIN + 5, MESSAGE_Y, MAIN_BOX_SIZE - 10, MESSAGE_LINE_HEIGHT);
 		}
 
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
 	}
 
-	private void paintMenu(Graphics2D g2d) {
-		g2d.fillRect(50, 50, 250, 250);
+	private void drawWrapped(Graphics2D g2d, String text, int x, int y, int maxWidth, int lineHeight) {
+		FontMetrics metrics = g2d.getFontMetrics();
+		StringBuilder line = new StringBuilder();
+		int lineY = y;
+		for (String word : text.split(" ")) {
+			String candidate = line.length() == 0 ? word : line + " " + word;
+			if (metrics.stringWidth(candidate) > maxWidth && line.length() > 0) {
+				g2d.drawString(line.toString(), x, lineY);
+				lineY += lineHeight;
+				line = new StringBuilder(word);
+			} else {
+				line = new StringBuilder(candidate);
+			}
+		}
+		if (line.length() > 0)
+			g2d.drawString(line.toString(), x, lineY);
+	}
+
+	private void paintMenu(Menu activeMenu, Graphics2D g2d) {
+		g2d.fillRect(MARGIN + 5, MARGIN + 5, MAIN_BOX_SIZE - 10, MAIN_BOX_SIZE - 10);
 		g2d.setColor(Color.BLACK);
 		int counter = 0;
 		for (String item : activeMenu.getDisplayNames()) {
 			String selector = activeMenu.getSelected().equals(item) ? "> " : "    ";
-			g2d.drawString(selector + item, 75, 75 + 25 * counter);
+			g2d.drawString(selector + item, MARGIN + 30, MARGIN + 30 + 25 * counter);
 			counter++;
 		}
 	}
 
-	private void paintBattleMenu(Graphics2D g2d) {
-		int menuX = 45;
-		int menuY = getHeight() - 120;
-		int menuWidth = 260;
-		int menuHeight = 105;
-
-		g2d.setColor(Color.WHITE);
-		g2d.drawRect(menuX, menuY, menuWidth, menuHeight);
+	private void paintGameOver(Graphics2D g2d) {
 		g2d.setColor(Color.BLACK);
-		g2d.fillRect(menuX + 5, menuY + 5, menuWidth - 10, menuHeight - 10);
+		g2d.fillRect(MARGIN + 5, MARGIN + 5, MAIN_BOX_SIZE - 10, MAIN_BOX_SIZE - 10);
+		g2d.setColor(Color.RED);
+		g2d.drawString("GAME OVER", MARGIN + 80, MARGIN + 120);
 		g2d.setColor(Color.WHITE);
-		g2d.drawString("=== BATTLE ===", 75, menuY + 25);
-		int counter = 1;
-		for (String item : battleMenu.getDisplayNames()) {
-			String selector = battleMenu.getSelected().equals(item) ? "> " : "    ";
-			g2d.drawString(selector + item, 75, menuY + 25 + 20 * counter);
-			counter++;
+		g2d.drawString("Press CONFIRM to continue", MARGIN + 50, MARGIN + 150);
+	}
+
+	private void paintBattleMenu(Menu activeMenu, Graphics2D g2d) {
+		int menuX = MARGIN;
+		int menuY = MAIN_BOX_BOTTOM + BOX_GAP;
+
+		g2d.setColor(Color.WHITE);
+		g2d.drawRect(menuX, menuY, MAIN_BOX_SIZE, BATTLE_MENU_HEIGHT);
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(menuX + 2, menuY + 2, MAIN_BOX_SIZE - 4, BATTLE_MENU_HEIGHT - 4);
+		g2d.setColor(Color.WHITE);
+		String title = activeMenu instanceof AttackMenu ? "SELECT ATTACK" : "BATTLE";
+		g2d.drawString(title, menuX + 15, menuY + 22);
+		g2d.drawLine(menuX + 10, menuY + 30, menuX + MAIN_BOX_SIZE - 10, menuY + 30);
+
+		int rowY = menuY + 52;
+		for (String item : activeMenu.getDisplayNames()) {
+			String selector = activeMenu.getSelected().equals(item) ? "> " : "   ";
+			g2d.drawString(selector + item, menuX + 20, rowY);
+			rowY += 24;
 		}
 	}
 
-	private void paintBattleGraphics(Graphics2D g2d) {
-		int menuY = getHeight() - 120;
-		int graphicsBottom = menuY - 10;
-
-		g2d.setColor(Color.WHITE);
-		g2d.drawRect(45, 45, 260, graphicsBottom - 45);
-		g2d.drawImage(ImageResources.getBattleEnemyImage(), 210, 70, 64, 64, this);
-		g2d.drawImage(ImageResources.getImage(player), 75, graphicsBottom - 75, 64, 64, this);
-		g2d.drawString("ENEMY", 215, 155);
-		g2d.drawString("PLAYER", 75, graphicsBottom - 5);
+	private void paintBattleGraphics(Player player, Battle battle, EnemyType enemyType, Graphics2D g2d) {
+		g2d.drawImage(ImageResources.getBattleEnemyImage(enemyType), MARGIN + 165, MARGIN + 25, 64, 64, this);
+		g2d.drawImage(ImageResources.getImage(player), MARGIN + 30, MARGIN + 150, 64, 64, this);
+		g2d.drawString(battle != null ? battle.getEnemy().getName() : "ENEMY", MARGIN + 170, MARGIN + 110);
+		g2d.drawString("PLAYER", MARGIN + 30, MARGIN + 232);
+		if (battle != null) {
+			g2d.drawString("HP " + battle.getEnemy().getHealth() + "/"
+					+ battle.getEnemy().getMaximumHealth(), MARGIN + 170, MARGIN + 125);
+			g2d.drawString("HP " + battle.getPlayer().getHealth() + "/"
+					+ battle.getPlayer().getMaximumHealth(), MARGIN + 30, MARGIN + 247);
+		}
 	}
 
 	@SuppressWarnings("unused")
-	private void paintFixedMap(GameMap playerMap, Graphics2D g2d) {
+	private void paintFixedMap(GameMap playerMap, Player player, Graphics2D g2d) {
 		for (int i = 0; i < playerMap.getWidth(); i++) {
 			for (int j = 0; j < playerMap.getHeight(); j++) {
 				if (playerMap.get(i, j) != null) {
@@ -137,7 +174,7 @@ public class GameScreen extends JPanel implements ActionListener {
 				player.getYPos() * 50, this);
 	}
 
-	private void paintMapPlayerFixed(GameMap playerMap, Graphics2D g2d) {
+	private void paintMapPlayerFixed(GameMap playerMap, Player player, Graphics2D g2d) {
 		for (int i = -2; i < 3; i++) {
 			for (int j = -2; j < 3; j++) {
 				if (playerMap.get(player.getXPos() + i, player.getYPos() + j) != null) {
@@ -150,101 +187,5 @@ public class GameScreen extends JPanel implements ActionListener {
 			}
 		}
 		g2d.drawImage(ImageResources.getImage(player), 3 * 50, 3 * 50, this);
-	}
-
-	private void returnToWorldIfBattleEnded() {
-		if (battle != null && !battle.isActive()) {
-			setActiveMenu(GameManager.getInstance().getMainMenu());
-			gameMode = GameMode.WORLD_MAP;
-		}
-	}
-
-	private void setActiveMenu(Menu menu) {
-		activeMenu = menu;
-		GameManager.getInstance().setActiveMenu(menu);
-	}
-
-	public void actionPerformed(ActionEvent e) {
-		repaint();
-	}
-
-	private class TAdapter extends KeyAdapter {
-		public void keyPressed(KeyEvent e) {
-			message = null;
-			int key = e.getKeyCode();
-			try {
-				if (gameMode == GameMode.WORLD_MAP) {
-					if (key == KeyEvent.VK_LEFT)
-						player.moveLeft();
-					else if (key == KeyEvent.VK_RIGHT)
-						player.moveRight();
-					else if (key == KeyEvent.VK_UP)
-						player.moveUp();
-					else if (key == KeyEvent.VK_DOWN)
-						player.moveDown();
-					else if (key == KeyEvent.VK_SPACE)
-						message = player.engage();
-					else if (key == KeyEvent.VK_P) {
-						setActiveMenu(GameManager.getInstance().getMainMenu());
-						gameMode = GameMode.MENU;
-					}
-					else if (key == KeyEvent.VK_B) {
-						battle = new Battle(
-							new Combatant("Player", 100),
-							new Combatant("Enemy", 80)
-						);
-						GameManager.getInstance().setBattle(battle);
-						setActiveMenu(GameManager.getInstance().getBattleMenu());
-						gameMode = GameMode.BATTLE;
-					}
-				}
-				else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
-					if (key == KeyEvent.VK_P) {
-						if (returnToBattle) {
-							setActiveMenu(GameManager.getInstance().getBattleMenu());
-							gameMode = GameMode.BATTLE;
-							returnToBattle = false;
-						}
-						else {
-							setActiveMenu(GameManager.getInstance().getMainMenu());
-						gameMode = GameMode.WORLD_MAP;
-						}
-					}
-					else if (key == KeyEvent.VK_B) {
-						setActiveMenu(GameManager.getInstance().getBattleMenu());
-						gameMode = GameMode.BATTLE;
-					}
-					else if (key == KeyEvent.VK_UP)
-						activeMenu.up();
-					else if (key == KeyEvent.VK_DOWN)
-						activeMenu.down();
-					else if (key == KeyEvent.VK_RIGHT)
-						activeMenu.accessSelected();
-					else if (key == KeyEvent.VK_SPACE)
-						activeMenu.triggerSelected();
-					else if (key == KeyEvent.VK_LEFT) {
-						if (returnToBattle) {
-							setActiveMenu(GameManager.getInstance().getBattleMenu());
-							gameMode = GameMode.BATTLE;
-							returnToBattle = false;
-						}
-						else
-							setActiveMenu(activeMenu.back());
-					}
-				}
-			} catch (InvalidMoveException ex) {
-				System.out.println(ex.getError());
-			} catch (Menu newMenu) {
-				setActiveMenu(newMenu);
-				if (newMenu instanceof InventoryMenu) {
-					gameMode = GameMode.MENU;
-					returnToBattle = true;
-				}
-			} catch (GameMessage gameMessage) {
-				message = gameMessage.getMessage();
-				returnToWorldIfBattleEnded();
-			}
-			repaint();
-		}
 	}
 }

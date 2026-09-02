@@ -11,21 +11,27 @@ import com.d3games.engine.map.Obstacle;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.map.Space;
 import com.d3games.engine.map.Unit;
+import com.d3games.engine.map.WildGrass;
 
 public class ImageResources {
-	
+
 	private static Map<Class<?>, SimpleImage> simpleImages = new HashMap<>();
 	static {
 		put(Space.class, "grass.png");
 		put(Door.class, "door.png");
 		put(Obstacle.class, "brick.png");
+		put(WildGrass.class, "wildGrass.png");
 	}
 	private static Map<Class<?>, CharacterImage> characterImages = new HashMap<>();
 	static {
 		put(NPC.class, new CharacterImage(getURL("dog.png")));
 		put(Player.class, "playerFront.png", "playerBack.png", "playerLeft.png", "playerRight.png");
 	}
-	private static SimpleImage battleEnemy = new SimpleImage(getURL("dog.png"));
+	private static Map<EnemyType, SimpleImage> battleEnemyImages = new HashMap<>();
+	static {
+		for (EnemyType enemyType : EnemyType.values())
+			battleEnemyImages.put(enemyType, new SimpleImage(getURL(enemyType.getImagePath())));
+	}
 	
 	private static void put(Class<? extends Unit> clazz, String imagePath) {
 		put(clazz, new SimpleImage(getURL(imagePath)));
@@ -55,8 +61,8 @@ public class ImageResources {
 		return characterImages.get(player.getClass()).getImage(player);
 	}
 
-	public static Image getBattleEnemyImage() {
-		return battleEnemy.getImage();
+	public static Image getBattleEnemyImage(EnemyType enemyType) {
+		return battleEnemyImages.get(enemyType).getImage();
 	}
 
 }

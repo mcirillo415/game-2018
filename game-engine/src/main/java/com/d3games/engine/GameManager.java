@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.d3games.engine.battle.Battle;
+import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.map.GameMap;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.Menu;
@@ -12,11 +13,14 @@ public class GameManager {
 	private static GameManager manager;
 	private List<GameMap> maps = new ArrayList<GameMap>();
 	private Player player;
+	private Combatant playerCombatant;
 	private Battle battle;
 	private Menu mainMenu;
 	private Menu battleMenu;
 	private Menu inventoryMenu;
+	private Menu attackMenu;
 	private Menu activeMenu;
+	private boolean battlePending;
 
 	private GameManager() {
 		
@@ -46,6 +50,16 @@ public class GameManager {
 
 	public void setPlayer(Player player) {
 		this.player = player;
+	}
+
+	public Combatant getPlayerCombatant() {
+		if (playerCombatant == null)
+			playerCombatant = new Combatant("Player", 100, 20, 5);
+		return playerCombatant;
+	}
+
+	public void setPlayerCombatant(Combatant playerCombatant) {
+		this.playerCombatant = playerCombatant;
 	}
 
 	public Battle getBattle() {
@@ -80,11 +94,31 @@ public class GameManager {
 		this.inventoryMenu = inventoryMenu;
 	}
 
+	public Menu getAttackMenu() {
+		return attackMenu;
+	}
+
+	public void setAttackMenu(Menu attackMenu) {
+		this.attackMenu = attackMenu;
+	}
+
 	public Menu getActiveMenu() {
 		return activeMenu;
 	}
 	
 	public void setActiveMenu(Menu activeMenu) {
 		this.activeMenu = activeMenu;
+	}
+
+	public void triggerBattle() {
+		battlePending = true;
+	}
+
+	public boolean isBattlePending() {
+		return battlePending;
+	}
+
+	public void clearPendingBattle() {
+		battlePending = false;
 	}
 }

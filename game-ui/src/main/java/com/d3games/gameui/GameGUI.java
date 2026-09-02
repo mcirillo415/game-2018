@@ -20,10 +20,10 @@ public class GameGUI extends JFrame {
 			MenuCreator.getInstance().generateBattleMenu();
 			add(new GameScreen());
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setSize(357, 380);
-			setLocationRelativeTo(null);
 			setTitle("GAME TITLE");
 			setResizable(false);
+			pack();
+			setLocationRelativeTo(null);
 			setVisible(true);
 		} catch (IOException e) {
 			e.printStackTrace();

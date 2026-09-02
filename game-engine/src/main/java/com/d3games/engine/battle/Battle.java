@@ -44,9 +44,10 @@ public class Battle {
 
 	public void playerAttack(int damage) {
 		ensureActive();
+		int actualDamage = applyDefense(damage, enemy);
 		System.out.printf("%s attacks %s for %d damage.%n",
-				player.getName(), enemy.getName(), damage);
-		enemy.takeDamage(damage);
+				player.getName(), enemy.getName(), actualDamage);
+		enemy.takeDamage(actualDamage);
 		System.out.printf("%s has %d/%d HP remaining.%n",
 				enemy.getName(), enemy.getHealth(), enemy.getMaximumHealth());
 		if (enemy.isFainted())
@@ -58,9 +59,10 @@ public class Battle {
 
 	public void enemyAttack(int damage) {
 		ensureActive();
+		int actualDamage = applyDefense(damage, player);
 		System.out.printf("%s attacks %s for %d damage.%n",
-				enemy.getName(), player.getName(), damage);
-		player.takeDamage(damage);
+				enemy.getName(), player.getName(), actualDamage);
+		player.takeDamage(actualDamage);
 		System.out.printf("%s has %d/%d HP remaining.%n",
 				player.getName(), player.getHealth(), player.getMaximumHealth());
 		if (player.isFainted())
@@ -79,5 +81,11 @@ public class Battle {
 	private void ensureActive() {
 		if (!isActive())
 			throw new IllegalStateException("The battle is no longer active");
+	}
+
+	private int applyDefense(int damage, Combatant target) {
+		if (damage < 0)
+			throw new IllegalArgumentException("Damage cannot be negative");
+		return Math.max(1, damage - target.getDefense());
 	}
 }
