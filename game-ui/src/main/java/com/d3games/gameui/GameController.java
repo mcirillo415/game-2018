@@ -24,14 +24,19 @@ public class GameController extends KeyAdapter {
 	private Player player;
 	private String message;
 	private boolean returnToBattle;
-	private GameMode gameMode = GameMode.WORLD_MAP;
+	private GameMode gameMode;
 
 	public GameController(Runnable onChange) {
+		this(onChange, false);
+	}
+
+	public GameController(Runnable onChange, boolean skipTitleScreen) {
 		this.onChange = onChange;
 		GameManager gameManager = GameManager.getInstance();
 		player = gameManager.getPlayer();
 		battle = gameManager.getBattle();
 		activeMenu = gameManager.getActiveMenu();
+		gameMode = skipTitleScreen ? GameMode.WORLD_MAP : GameMode.TITLE;
 	}
 
 	public Menu getActiveMenu() {
@@ -63,7 +68,11 @@ public class GameController extends KeyAdapter {
 		message = null;
 		GameAction action = keyBindings.resolve(e.getKeyCode());
 		try {
-			if (gameMode == GameMode.WORLD_MAP) {
+			if (gameMode == GameMode.TITLE) {
+				if (action == GameAction.CONFIRM)
+					gameMode = GameMode.WORLD_MAP;
+			}
+			else if (gameMode == GameMode.WORLD_MAP) {
 				if (action == GameAction.MOVE_LEFT)
 					player.moveLeft();
 				else if (action == GameAction.MOVE_RIGHT)

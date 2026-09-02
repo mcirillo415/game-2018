@@ -34,7 +34,11 @@ public class GameScreen extends JPanel {
 	private final GameController controller;
 
 	public GameScreen() {
-		controller = new GameController(this::repaint);
+		this(false);
+	}
+
+	public GameScreen(boolean skipTitleScreen) {
+		controller = new GameController(this::repaint, skipTitleScreen);
 		addKeyListener(controller);
 		setFocusable(true);
 		setBackground(Color.BLACK);
@@ -51,6 +55,15 @@ public class GameScreen extends JPanel {
 		super.paint(g);
 		Graphics2D g2d = (Graphics2D) g;
 		g2d.setFont(getFont());
+
+		GameMode gameMode = controller.getGameMode();
+		if (gameMode == GameMode.TITLE) {
+			paintTitleScreen(g2d);
+			Toolkit.getDefaultToolkit().sync();
+			g.dispose();
+			return;
+		}
+
 		Player player = controller.getPlayer();
 		GameMap playerMap = player.getMap();
 
@@ -63,7 +76,6 @@ public class GameScreen extends JPanel {
 		g2d.setColor(Color.WHITE);
 		g2d.drawRect(MARGIN, MARGIN, MAIN_BOX_SIZE, MAIN_BOX_SIZE);
 
-		GameMode gameMode = controller.getGameMode();
 		if (gameMode == GameMode.WORLD_MAP) {
 			paintMapPlayerFixed(playerMap, player, g2d);
 		} else if (gameMode == GameMode.MENU) {
@@ -83,6 +95,12 @@ public class GameScreen extends JPanel {
 
 		Toolkit.getDefaultToolkit().sync();
 		g.dispose();
+	}
+
+	private void paintTitleScreen(Graphics2D g2d) {
+		g2d.setColor(Color.WHITE);
+		g2d.drawString("GAME TITLE", MARGIN + 75, PANEL_HEIGHT / 2 - 20);
+		g2d.drawString("Press CONFIRM to start", MARGIN + 40, PANEL_HEIGHT / 2 + 10);
 	}
 
 	private void drawWrapped(Graphics2D g2d, String text, int x, int y, int maxWidth, int lineHeight) {

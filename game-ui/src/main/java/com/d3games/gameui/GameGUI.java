@@ -12,13 +12,17 @@ public class GameGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	public GameGUI(File world) {
+		this(world, false);
+	}
+
+	public GameGUI(File world, boolean skipTitleScreen) {
 		MapCreator.getInstance();
 		MenuCreator.getInstance();
 		try {
 			MapCreator.getInstance().generateMap(world);
 			MenuCreator.getInstance().generateMenu();
 			MenuCreator.getInstance().generateBattleMenu();
-			add(new GameScreen());
+			add(new GameScreen(skipTitleScreen));
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setTitle("GAME TITLE");
 			setResizable(false);
