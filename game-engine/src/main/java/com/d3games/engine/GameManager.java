@@ -21,6 +21,7 @@ public class GameManager {
 	private Menu attackMenu;
 	private Menu activeMenu;
 	private boolean battlePending;
+	private boolean pendingBattleEscapable = true;
 
 	private GameManager() {
 		
@@ -111,11 +112,20 @@ public class GameManager {
 	}
 
 	public void triggerBattle() {
+		triggerBattle(true);
+	}
+
+	public void triggerBattle(boolean escapable) {
 		battlePending = true;
+		pendingBattleEscapable = escapable;
 	}
 
 	public boolean isBattlePending() {
 		return battlePending;
+	}
+
+	public boolean isPendingBattleEscapable() {
+		return pendingBattleEscapable;
 	}
 
 	public void clearPendingBattle() {

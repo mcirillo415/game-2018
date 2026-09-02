@@ -88,11 +88,12 @@ public class GameController extends KeyAdapter {
 					gameMode = GameMode.MENU;
 				}
 				else if (action == GameAction.BATTLE)
-					startBattle();
+					startBattle(true);
 
 				if (gameMode == GameMode.WORLD_MAP && GameManager.getInstance().isBattlePending()) {
+					boolean escapable = GameManager.getInstance().isPendingBattleEscapable();
 					GameManager.getInstance().clearPendingBattle();
-					startBattle();
+					startBattle(escapable);
 				}
 			}
 			else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
@@ -154,11 +155,12 @@ public class GameController extends KeyAdapter {
 		onChange.run();
 	}
 
-	private void startBattle() {
+	private void startBattle(boolean escapable) {
 		enemyType = EnemyType.random();
 		battle = new Battle(
 			GameManager.getInstance().getPlayerCombatant(),
-			enemyType.newCombatant()
+			enemyType.newCombatant(),
+			escapable
 		);
 		GameManager.getInstance().setBattle(battle);
 		setActiveMenu(GameManager.getInstance().getBattleMenu());

@@ -11,6 +11,8 @@ public class EscapeItem implements MenuItem {
 		Battle battle = GameManager.getInstance().getBattle();
 		if (battle == null || !battle.isActive())
 			throw new GameMessage("There is no active battle.");
+		if (!battle.isEscapable())
+			throw new GameMessage("You can't run from this battle!");
 
 		battle.escape();
 

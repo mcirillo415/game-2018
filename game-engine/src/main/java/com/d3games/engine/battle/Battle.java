@@ -5,13 +5,23 @@ import java.util.Objects;
 public class Battle {
 	private final Combatant player;
 	private final Combatant enemy;
+	private final boolean escapable;
 	private BattleState state = BattleState.ACTIVE;
     private Combatant currentTurn;
 
 	public Battle(Combatant player, Combatant enemy) {
+		this(player, enemy, true);
+	}
+
+	public Battle(Combatant player, Combatant enemy, boolean escapable) {
 		this.player = Objects.requireNonNull(player, "Player combatant is required");
 		this.enemy = Objects.requireNonNull(enemy, "Enemy combatant is required");
+		this.escapable = escapable;
         currentTurn = player; // Player starts first
+	}
+
+	public boolean isEscapable() {
+		return escapable;
 	}
 
 	public Combatant getPlayer() {
@@ -74,6 +84,8 @@ public class Battle {
 
 	public void escape() {
 		ensureActive();
+		if (!escapable)
+			throw new IllegalStateException("This battle cannot be escaped");
 		state = BattleState.ESCAPED;
 		System.out.println(player.getName() + " escaped from the battle.");
 	}
