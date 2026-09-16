@@ -93,7 +93,9 @@ java -jar pokemon-clone-core/target/pokemon-clone-core-0.0.1-SNAPSHOT.jar
 - Menu hierarchy is built recursively (Menu.add can take another Menu)
 
 **Adding a new attack move**:
-- Add an entry to `AttackMenu`'s constructor: `new AttackMoveItem(name, damageMultiplier, recoilFraction, lifestealFraction, evadeChance)`
+- Moves are per-`Combatant` (`Combatant.getMoves()`/`setMoves()`), not global — `AttackMenu` is rebuilt fresh from `battle.getPlayer().getMoves()` each time "Attack" is selected (`AttackItem`)
+- Create a `new Move(name, elementType, damageMultiplier, recoilFraction, lifestealFraction, evadeChance)` and add it to a species' moveset (e.g. `EnemyType`'s per-constant move list) or the player's starter moveset (`GameManager.getParty()`)
+- `AttackMoveItem` applies `TypeChart.getMultiplier(move.getElementType(), enemy.getElementType())` to damage automatically
 
 **Fixing movement bugs**:
 - Check `Player.move()` logic and `Unit.getMap()` state

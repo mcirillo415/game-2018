@@ -73,6 +73,12 @@ public class MapCreator {
 					boolean initiatesBattle = values.length <= valueOffset
 							|| Boolean.parseBoolean(values[valueOffset]);
 					new NPC(gameManager.get(mapRef).get(x, y), initiatesBattle);
+				} else if (type == 'i') {
+					String kind = values[valueOffset];
+					int amount = Integer.parseInt(values[valueOffset + 1]);
+					gameManager.get(mapRef).add(new ItemPickup(kind, amount), x, y);
+				} else if (type == 'k') {
+					new ShopNPC(gameManager.get(mapRef).get(x, y));
 				}
 				continue;
 			}

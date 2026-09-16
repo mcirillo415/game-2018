@@ -1,13 +1,21 @@
 package com.d3games.engine.battle;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Combatant {
 	private static final int BASE_EXPERIENCE_TO_LEVEL = 100;
 	private static final int EXPERIENCE_TO_LEVEL_INCREMENT = 25;
 	private static final int BASE_EXPERIENCE_REWARD = 20;
 	private static final int EXPERIENCE_REWARD_PER_LEVEL = 15;
+	private static final int BASE_CURRENCY_REWARD = 15;
+	private static final int CURRENCY_REWARD_PER_LEVEL = 5;
 	private static final int LEVEL_UP_HEALTH_GAIN = 10;
 	private static final int LEVEL_UP_ATTACK_GAIN = 3;
 	private static final int LEVEL_UP_DEFENSE_GAIN = 1;
+
+	private static final Move DEFAULT_MOVE = new Move("Tackle", ElementType.NORMAL, 1.0, 0, 0, 0);
 
 	private final String name;
 	private int maximumHealth;
@@ -17,6 +25,8 @@ public class Combatant {
 	private int level;
 	private int experience;
 	private int experienceToNextLevel;
+	private ElementType elementType = ElementType.NORMAL;
+	private List<Move> moves = new ArrayList<Move>(Collections.singletonList(DEFAULT_MOVE));
 
 	public Combatant(String name, int maximumHealth) {
 		this(name, maximumHealth, 20, 0);
@@ -45,6 +55,19 @@ public class Combatant {
 		this.level = level;
 		this.health = maximumHealth;
 		this.experienceToNextLevel = experienceToLevel(level);
+	}
+
+	public Combatant(Combatant other) {
+		this.name = other.name;
+		this.maximumHealth = other.maximumHealth;
+		this.attackPower = other.attackPower;
+		this.defense = other.defense;
+		this.level = other.level;
+		this.health = other.health;
+		this.experience = other.experience;
+		this.experienceToNextLevel = other.experienceToNextLevel;
+		this.elementType = other.elementType;
+		this.moves = new ArrayList<Move>(other.moves);
 	}
 
 	public String getName() {
@@ -81,6 +104,26 @@ public class Combatant {
 
 	public int getExperienceReward() {
 		return BASE_EXPERIENCE_REWARD + (level - 1) * EXPERIENCE_REWARD_PER_LEVEL;
+	}
+
+	public int getCurrencyReward() {
+		return BASE_CURRENCY_REWARD + (level - 1) * CURRENCY_REWARD_PER_LEVEL;
+	}
+
+	public ElementType getElementType() {
+		return elementType;
+	}
+
+	public void setElementType(ElementType elementType) {
+		this.elementType = elementType;
+	}
+
+	public List<Move> getMoves() {
+		return Collections.unmodifiableList(moves);
+	}
+
+	public void setMoves(List<Move> moves) {
+		this.moves = new ArrayList<Move>(moves);
 	}
 
 	public boolean isFainted() {

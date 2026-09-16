@@ -23,10 +23,6 @@ public class NPC extends Player {
 		this.initiatesBattle = initiatesBattle;
 	}
 
-	protected String getCharacterImageUrl(Direction dir) {
-		return "dog.png";
-	}
-
 	public String toFile() {
 		return "n" + pos.getMap().getId() + pos.getX() + pos.getY();
 	}

@@ -126,7 +126,7 @@ public class GameScreen extends JPanel {
 		g2d.setColor(Color.BLACK);
 		int counter = 0;
 		for (String item : activeMenu.getDisplayNames()) {
-			String selector = activeMenu.getSelected().equals(item) ? "> " : "    ";
+			String selector = counter == activeMenu.getSelectedIndex() ? "> " : "    ";
 			g2d.drawString(selector + item, MARGIN + 30, MARGIN + 30 + 25 * counter);
 			counter++;
 		}
@@ -155,10 +155,12 @@ public class GameScreen extends JPanel {
 		g2d.drawLine(menuX + 10, menuY + 30, menuX + MAIN_BOX_SIZE - 10, menuY + 30);
 
 		int rowY = menuY + 52;
+		int counter = 0;
 		for (String item : activeMenu.getDisplayNames()) {
-			String selector = activeMenu.getSelected().equals(item) ? "> " : "   ";
+			String selector = counter == activeMenu.getSelectedIndex() ? "> " : "   ";
 			g2d.drawString(selector + item, menuX + 20, rowY);
 			rowY += 24;
+			counter++;
 		}
 	}
 
@@ -167,13 +169,18 @@ public class GameScreen extends JPanel {
 		int boxRight = MARGIN + MAIN_BOX_SIZE - 10;
 
 		g2d.drawImage(ImageResources.getBattleEnemyImage(enemyType), MARGIN + 165, MARGIN + 25, 64, 64, this);
-		g2d.drawImage(ImageResources.getImage(player), MARGIN + 30, MARGIN + 150, 64, 64, this);
+
+		EnemyType activeSpecies = battle != null ? EnemyType.fromDisplayName(battle.getPlayer().getName()) : null;
+		if (activeSpecies != null)
+			g2d.drawImage(ImageResources.getBattleEnemyImage(activeSpecies), MARGIN + 30, MARGIN + 150, 64, 64, this);
+		else
+			g2d.drawImage(ImageResources.getImage(player), MARGIN + 30, MARGIN + 150, 64, 64, this);
 
 		String enemyLabel = battle != null
 				? battle.getEnemy().getName() + " Lv" + battle.getEnemy().getLevel()
 				: "ENEMY";
 		g2d.drawString(enemyLabel, boxRight - metrics.stringWidth(enemyLabel), MARGIN + 110);
-		g2d.drawString("PLAYER", MARGIN + 30, MARGIN + 232);
+		g2d.drawString(battle != null ? battle.getPlayer().getName() : "PLAYER", MARGIN + 30, MARGIN + 232);
 
 		if (battle != null) {
 			String enemyHp = "HP " + battle.getEnemy().getHealth() + "/" + battle.getEnemy().getMaximumHealth();

@@ -39,6 +39,10 @@ public class Menu extends Throwable implements MenuItem {
 		return itemNames.get(selected);
 	}
 
+	public int getSelectedIndex() {
+		return selected;
+	}
+
 	public void up() {
 		if (selected == 0)
 			throw new InvalidMoveException();
