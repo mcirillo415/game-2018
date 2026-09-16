@@ -4,5 +4,6 @@ public enum BattleState {
 	ACTIVE,
 	PLAYER_WON,
 	PLAYER_LOST,
-	ESCAPED
+	ESCAPED,
+	CAUGHT
 }

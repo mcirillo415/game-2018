@@ -18,19 +18,6 @@ public class Player {
 		return gaze;
 	}
 
-	protected String getCharacterImageUrl(Direction dir) {
-		switch (dir) {
-		case UP:
-			return "playerBack.png";
-		case RIGHT:
-			return "playerRight.png";
-		case LEFT:
-			return "playerLeft.png";
-		default:
-			return "playerFront.png";
-		}
-	}
-
 	public String toFile() {
 		return "p" + pos.getMap().getId() + pos.getX() + pos.getY();
 	}

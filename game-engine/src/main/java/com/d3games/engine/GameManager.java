@@ -3,25 +3,35 @@ package com.d3games.engine;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Arrays;
+
 import com.d3games.engine.battle.Battle;
 import com.d3games.engine.battle.Combatant;
+import com.d3games.engine.battle.ElementType;
+import com.d3games.engine.battle.Move;
+import com.d3games.engine.battle.Party;
+import com.d3games.engine.item.Inventory;
+import com.d3games.engine.item.Wallet;
 import com.d3games.engine.map.GameMap;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.Menu;
 
 public class GameManager {
+	private static final int STARTING_BONES = 20;
+
 	private static GameManager manager;
 	private List<GameMap> maps = new ArrayList<GameMap>();
 	private Player player;
-	private Combatant playerCombatant;
+	private Party party;
+	private Inventory inventory;
+	private Wallet wallet;
 	private Battle battle;
 	private Menu mainMenu;
 	private Menu battleMenu;
-	private Menu inventoryMenu;
-	private Menu attackMenu;
 	private Menu activeMenu;
 	private boolean battlePending;
 	private boolean pendingBattleEscapable = true;
+	private boolean shopPending;
 
 	private GameManager() {
 		
@@ -54,13 +64,20 @@ public class GameManager {
 	}
 
 	public Combatant getPlayerCombatant() {
-		if (playerCombatant == null)
-			playerCombatant = new Combatant("Player", 100, 20, 5);
-		return playerCombatant;
+		return getParty().getActive();
 	}
 
-	public void setPlayerCombatant(Combatant playerCombatant) {
-		this.playerCombatant = playerCombatant;
+	public Party getParty() {
+		if (party == null) {
+			Combatant starter = new Combatant("Player", 100, 20, 5);
+			starter.setMoves(Arrays.asList(
+					new Move("Tackle", ElementType.NORMAL, 1.0, 0, 0, 0),
+					new Move("Power Bite", ElementType.NORMAL, 1.5, 0.15, 0, 0),
+					new Move("Quick Nip", ElementType.NORMAL, 0.6, 0, 0, 0.4),
+					new Move("Leech Bite", ElementType.NORMAL, 0.7, 0, 0.5, 0)));
+			party = new Party(starter);
+		}
+		return party;
 	}
 
 	public Battle getBattle() {
@@ -87,20 +104,18 @@ public class GameManager {
 		this.battleMenu = battleMenu;
 	}	
 
-	public Menu getInventoryMenu() {
-		return inventoryMenu;
+	public Inventory getInventory() {
+		if (inventory == null)
+			inventory = new Inventory();
+		return inventory;
 	}
 
-	public void setInventoryMenu(Menu inventoryMenu) {
-		this.inventoryMenu = inventoryMenu;
-	}
-
-	public Menu getAttackMenu() {
-		return attackMenu;
-	}
-
-	public void setAttackMenu(Menu attackMenu) {
-		this.attackMenu = attackMenu;
+	public Wallet getWallet() {
+		if (wallet == null) {
+			wallet = new Wallet();
+			wallet.add(STARTING_BONES);
+		}
+		return wallet;
 	}
 
 	public Menu getActiveMenu() {
@@ -130,5 +145,17 @@ public class GameManager {
 
 	public void clearPendingBattle() {
 		battlePending = false;
+	}
+
+	public void triggerShop() {
+		shopPending = true;
+	}
+
+	public boolean isShopPending() {
+		return shopPending;
+	}
+
+	public void clearPendingShop() {
+		shopPending = false;
 	}
 }

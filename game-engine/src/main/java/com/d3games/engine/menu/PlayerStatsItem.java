@@ -9,10 +9,11 @@ public class PlayerStatsItem implements MenuItem {
 	@Override
 	public void trigger() throws GameMessage {
 		Combatant player = GameManager.getInstance().getPlayerCombatant();
+		int bones = GameManager.getInstance().getWallet().getBalance();
 		throw new GameMessage(String.format(
-				"Lv %d | HP %d/%d | ATK %d | DEF %d | EXP %d/%d",
+				"Lv %d | HP %d/%d | ATK %d | DEF %d | EXP %d/%d | Bones %d",
 				player.getLevel(), player.getHealth(), player.getMaximumHealth(),
 				player.getAttackPower(), player.getDefense(),
-				player.getExperience(), player.getExperienceToNextLevel()));
+				player.getExperience(), player.getExperienceToNextLevel(), bones));
 	}
 }

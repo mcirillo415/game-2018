@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.d3games.engine.map.Door;
+import com.d3games.engine.map.ItemPickup;
 import com.d3games.engine.map.NPC;
 import com.d3games.engine.map.Obstacle;
 import com.d3games.engine.map.Player;
+import com.d3games.engine.map.ShopNPC;
 import com.d3games.engine.map.Space;
 import com.d3games.engine.map.Unit;
 import com.d3games.engine.map.WildGrass;
@@ -21,11 +23,14 @@ public class ImageResources {
 		put(Door.class, "door.png");
 		put(Obstacle.class, "brick.png");
 		put(WildGrass.class, "wildGrass.png");
+		put(ItemPickup.class, "itemPickup.png");
 	}
 	private static Map<Class<?>, CharacterImage> characterImages = new HashMap<>();
 	static {
-		put(NPC.class, new CharacterImage(getURL("dog.png")));
-		put(Player.class, "playerFront.png", "playerBack.png", "playerLeft.png", "playerRight.png");
+		put(NPC.class, new CharacterImage(getURL("characters/npc/dog.png")));
+		put(ShopNPC.class, new CharacterImage(getURL("characters/npc/shopkeeper.png")));
+		put(Player.class, "characters/player/playerFront.png", "characters/player/playerBack.png",
+				"characters/player/playerLeft.png", "characters/player/playerRight.png");
 	}
 	private static Map<EnemyType, SimpleImage> battleEnemyImages = new HashMap<>();
 	static {

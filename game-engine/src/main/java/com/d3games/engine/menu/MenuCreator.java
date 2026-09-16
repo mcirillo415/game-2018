@@ -23,6 +23,8 @@ public class MenuCreator {
 	public void generateMenu() {
 		mainMenu = new Menu();
 		mainMenu.add("Player Stats", new PlayerStatsItem());
+		mainMenu.add("Party", new PartyItem(mainMenu));
+		mainMenu.add("Bag", new InventoryItem(mainMenu));
 		Menu items = new Menu();
 		items.add("Pokeball", new UselessItem("What the heck is this?"));
 		items.add("Pokeflute", new UselessItem("Looks like a regular flute to me..."));
@@ -35,10 +37,9 @@ public class MenuCreator {
 
 	public void generateBattleMenu() {
 		Menu battleMenu = new Menu();
-		GameManager.getInstance().setInventoryMenu(new InventoryMenu());
-		GameManager.getInstance().setAttackMenu(new AttackMenu());
-		battleMenu.add("Attack", new AttackItem());
-		battleMenu.add("Bag", new InventoryItem());
+		battleMenu.add("Attack", new AttackItem(battleMenu));
+		battleMenu.add("Bag", new InventoryItem(battleMenu));
+		battleMenu.add("Party", new PartyItem(battleMenu));
 		battleMenu.add("Run", new EscapeItem());
 		GameManager.getInstance().setBattleMenu(battleMenu);
 	}
