@@ -8,7 +8,7 @@ public class Main {
 
 	public static void main(String[] args) {
 		boolean skipTitleScreen = shouldSkipTitleScreen(args);
-		new GameGUI(new File(Main.class.getResource("world3.txt").getFile()), skipTitleScreen);
+		new GameGUI(new File(Main.class.getResource("world3/manifest.txt").getFile()), skipTitleScreen);
 	}
 
 	private static boolean shouldSkipTitleScreen(String[] args) {

@@ -33,7 +33,8 @@ public class NPC extends Player {
 
 	public String prompt() {
 		if (initiatesBattle)
-			GameManager.getInstance().triggerBattle(false);
+			GameManager.getInstance().triggerBattle(false,
+					new MapCoordinate(pos.getMap().getId(), pos.getX(), pos.getY()));
 		if (Math.random() > 0.5)
 			return "Arf!";
 		else

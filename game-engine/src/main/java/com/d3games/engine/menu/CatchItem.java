@@ -49,9 +49,7 @@ public class CatchItem implements MenuItem {
 
 		StringBuilder resultMessage = new StringBuilder(
 				"The Pokeball missed! " + enemy.getName() + " broke free!");
-		if (battle.getLastEnemyMove() != null)
-			resultMessage.append(" ").append(enemy.getName()).append(" used ")
-					.append(battle.getLastEnemyMove().getName()).append("!");
+		resultMessage.append(battle.describeLastEnemyAction());
 		if (battle.getState() == BattleState.PLAYER_LOST) {
 			resultMessage.append(" ").append(playerBeforeCounter.getName()).append(" was defeated!");
 			SoundPlayer.play(SoundEffect.GAME_OVER);

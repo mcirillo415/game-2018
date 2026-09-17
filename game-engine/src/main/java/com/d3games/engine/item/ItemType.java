@@ -2,7 +2,8 @@ package com.d3games.engine.item;
 
 public enum ItemType {
 	POTION("Potion", 3),
-	POKEBALL("Pokeball", 5);
+	POKEBALL("Pokeball", 5),
+	REVIVE("Revive", 1);
 
 	private final String displayName;
 	private final int startingCount;

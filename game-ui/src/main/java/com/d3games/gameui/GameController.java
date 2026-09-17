@@ -8,12 +8,14 @@ import com.d3games.engine.GameMessage;
 import com.d3games.engine.InvalidMoveException;
 import com.d3games.engine.battle.Battle;
 import com.d3games.engine.battle.BattleState;
+import com.d3games.engine.map.MapCoordinate;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.AttackMenu;
 import com.d3games.engine.menu.HealMenu;
 import com.d3games.engine.menu.InventoryMenu;
 import com.d3games.engine.menu.Menu;
 import com.d3games.engine.menu.PartyMenu;
+import com.d3games.engine.menu.ReviveMenu;
 import com.d3games.engine.menu.ShopMenu;
 import com.d3games.engine.sound.SoundEffect;
 import com.d3games.engine.sound.SoundPlayer;
@@ -92,18 +94,21 @@ public class GameController extends KeyAdapter {
 					gameMode = GameMode.MENU;
 				}
 				else if (action == GameAction.BATTLE)
-					startBattle(true);
+					startBattle(true, null);
 
 				if (gameMode == GameMode.WORLD_MAP && GameManager.getInstance().isBattlePending()) {
 					boolean escapable = GameManager.getInstance().isPendingBattleEscapable();
+					MapCoordinate sourceNpc = GameManager.getInstance().getPendingSourceNpc();
 					GameManager.getInstance().clearPendingBattle();
-					startBattle(escapable);
+					startBattle(escapable, sourceNpc);
 				}
 				if (gameMode == GameMode.WORLD_MAP && GameManager.getInstance().isShopPending()) {
 					GameManager.getInstance().clearPendingShop();
 					setActiveMenu(new ShopMenu());
 					gameMode = GameMode.MENU;
 				}
+				if (GameManager.getInstance().isMessagePending())
+					message = GameManager.getInstance().consumePendingMessage();
 			}
 			else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
 				if (action == GameAction.MENU) {
@@ -152,6 +157,8 @@ public class GameController extends KeyAdapter {
 			}
 		} catch (InvalidMoveException ex) {
 			System.out.println(ex.getError());
+			if (!"Invalid Move".equals(ex.getError()))
+				message = ex.getError();
 		} catch (Menu newMenu) {
 			setActiveMenu(newMenu);
 			SoundPlayer.play(SoundEffect.MENU_SELECT);
@@ -171,7 +178,8 @@ public class GameController extends KeyAdapter {
 		} catch (GameMessage gameMessage) {
 			message = gameMessage.getMessage();
 			boolean menuTiedToBattleAction = activeMenu instanceof InventoryMenu || activeMenu instanceof HealMenu
-					|| activeMenu instanceof AttackMenu || activeMenu instanceof PartyMenu;
+					|| activeMenu instanceof ReviveMenu || activeMenu instanceof AttackMenu
+					|| activeMenu instanceof PartyMenu;
 			if (returnToBattle && menuTiedToBattleAction && battle != null && battle.isActive()) {
 				setActiveMenu(GameManager.getInstance().getBattleMenu());
 				gameMode = GameMode.BATTLE;
@@ -182,12 +190,13 @@ public class GameController extends KeyAdapter {
 		onChange.run();
 	}
 
-	private void startBattle(boolean escapable) {
+	private void startBattle(boolean escapable, MapCoordinate sourceNpc) {
 		enemyType = EnemyType.random();
 		battle = new Battle(
 			GameManager.getInstance().getParty(),
 			enemyType.newCombatant(),
-			escapable
+			escapable,
+			sourceNpc
 		);
 		GameManager.getInstance().setBattle(battle);
 		setActiveMenu(GameManager.getInstance().getBattleMenu());

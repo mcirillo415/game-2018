@@ -1,0 +1,11 @@
+m13,3,3
+o,13,0,0
+o,13,2,0
+o,13,0,2
+o,13,2,2
+s,13,1,0
+v,13,1,0,I heard there are trainers looking for battles down the corridors.
+s,13,0,1
+s,13,1,1
+s,13,2,1
+d,13,1,2,11,3,2

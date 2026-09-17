@@ -9,7 +9,9 @@ public class InventoryMenu extends Menu {
 	public InventoryMenu() {
 		int potions = GameManager.getInstance().getInventory().getCount(ItemType.POTION);
 		int pokeballs = GameManager.getInstance().getInventory().getCount(ItemType.POKEBALL);
+		int revives = GameManager.getInstance().getInventory().getCount(ItemType.REVIVE);
 		add("Potion x" + potions, new PotionItem(this));
 		add("Pokeball x" + pokeballs, new CatchItem());
+		add("Revive x" + revives, new ReviveItem(this));
 	}
 }

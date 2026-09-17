@@ -69,8 +69,11 @@ public class GameScreen extends JPanel {
 
 		String worldName = playerMap.getWorldName();
 		if (worldName != null && !worldName.isEmpty()) {
+			String roomLabel = playerMap.getRoomName() != null
+					? playerMap.getRoomName()
+					: "Map " + playerMap.getId();
 			g2d.setColor(Color.WHITE);
-			g2d.drawString(worldName + " - Map " + playerMap.getId(), MARGIN + 5, 22);
+			g2d.drawString(worldName + " - " + roomLabel, MARGIN + 5, 22);
 		}
 
 		g2d.setColor(Color.WHITE);

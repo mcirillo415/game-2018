@@ -35,9 +35,7 @@ public class SwitchToMemberItem implements MenuItem {
 			if (battle.isActive())
 				battle.endTurn();
 
-			if (battle.getLastEnemyMove() != null)
-				resultMessage.append(" ").append(battle.getEnemy().getName()).append(" used ")
-						.append(battle.getLastEnemyMove().getName()).append("!");
+			resultMessage.append(battle.describeLastEnemyAction());
 			if (battle.getState() == BattleState.PLAYER_LOST) {
 				resultMessage.append(" ").append(target.getName()).append(" was defeated!");
 				SoundPlayer.play(SoundEffect.GAME_OVER);
