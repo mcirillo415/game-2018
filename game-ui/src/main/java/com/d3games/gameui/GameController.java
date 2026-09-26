@@ -8,6 +8,7 @@ import com.d3games.engine.GameMessage;
 import com.d3games.engine.InvalidMoveException;
 import com.d3games.engine.battle.Battle;
 import com.d3games.engine.battle.BattleState;
+import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.map.MapCoordinate;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.AttackMenu;
@@ -155,6 +156,12 @@ public class GameController extends KeyAdapter {
 					gameMode = GameMode.WORLD_MAP;
 				}
 			}
+			else if (gameMode == GameMode.GAME_COMPLETE) {
+				if (action == GameAction.CONFIRM) {
+					setActiveMenu(GameManager.getInstance().getMainMenu());
+					gameMode = GameMode.WORLD_MAP;
+				}
+			}
 		} catch (InvalidMoveException ex) {
 			System.out.println(ex.getError());
 			if (!"Invalid Move".equals(ex.getError()))
@@ -191,10 +198,18 @@ public class GameController extends KeyAdapter {
 	}
 
 	private void startBattle(boolean escapable, MapCoordinate sourceNpc) {
-		enemyType = EnemyType.random();
+		TrainerType trainerType = sourceNpc != null ? TrainerType.forRoomId(sourceNpc.mapId) : null;
+		Combatant enemyCombatant;
+		if (trainerType != null) {
+			enemyType = trainerType.getSpriteType();
+			enemyCombatant = trainerType.newCombatant();
+		} else {
+			enemyType = EnemyType.random();
+			enemyCombatant = enemyType.newCombatant();
+		}
 		battle = new Battle(
 			GameManager.getInstance().getParty(),
-			enemyType.newCombatant(),
+			enemyCombatant,
 			escapable,
 			sourceNpc
 		);
@@ -206,9 +221,13 @@ public class GameController extends KeyAdapter {
 	private void returnToWorldIfBattleEnded() {
 		if (battle == null || battle.isActive())
 			return;
+		MapCoordinate sourceNpc = battle.getSourceNpc();
 		if (battle.getState() == BattleState.PLAYER_LOST) {
 			message = battle.getPlayer().getName() + " was defeated by " + battle.getEnemy().getName() + "!";
 			gameMode = GameMode.GAME_OVER;
+		} else if (battle.getState() == BattleState.PLAYER_WON
+				&& sourceNpc != null && TrainerType.isFinalTrainerRoom(sourceNpc.mapId)) {
+			gameMode = GameMode.GAME_COMPLETE;
 		} else {
 			setActiveMenu(GameManager.getInstance().getMainMenu());
 			gameMode = GameMode.WORLD_MAP;
