@@ -8,12 +8,15 @@ import com.d3games.engine.GameMessage;
 import com.d3games.engine.InvalidMoveException;
 import com.d3games.engine.battle.Battle;
 import com.d3games.engine.battle.BattleState;
+import com.d3games.engine.battle.Combatant;
+import com.d3games.engine.map.MapCoordinate;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.AttackMenu;
 import com.d3games.engine.menu.HealMenu;
 import com.d3games.engine.menu.InventoryMenu;
 import com.d3games.engine.menu.Menu;
 import com.d3games.engine.menu.PartyMenu;
+import com.d3games.engine.menu.ReviveMenu;
 import com.d3games.engine.menu.ShopMenu;
 import com.d3games.engine.sound.SoundEffect;
 import com.d3games.engine.sound.SoundPlayer;
@@ -92,18 +95,21 @@ public class GameController extends KeyAdapter {
 					gameMode = GameMode.MENU;
 				}
 				else if (action == GameAction.BATTLE)
-					startBattle(true);
+					startBattle(true, null);
 
 				if (gameMode == GameMode.WORLD_MAP && GameManager.getInstance().isBattlePending()) {
 					boolean escapable = GameManager.getInstance().isPendingBattleEscapable();
+					MapCoordinate sourceNpc = GameManager.getInstance().getPendingSourceNpc();
 					GameManager.getInstance().clearPendingBattle();
-					startBattle(escapable);
+					startBattle(escapable, sourceNpc);
 				}
 				if (gameMode == GameMode.WORLD_MAP && GameManager.getInstance().isShopPending()) {
 					GameManager.getInstance().clearPendingShop();
 					setActiveMenu(new ShopMenu());
 					gameMode = GameMode.MENU;
 				}
+				if (GameManager.getInstance().isMessagePending())
+					message = GameManager.getInstance().consumePendingMessage();
 			}
 			else if (gameMode == GameMode.MENU || gameMode == GameMode.BATTLE) {
 				if (action == GameAction.MENU) {
@@ -150,8 +156,16 @@ public class GameController extends KeyAdapter {
 					gameMode = GameMode.WORLD_MAP;
 				}
 			}
+			else if (gameMode == GameMode.GAME_COMPLETE) {
+				if (action == GameAction.CONFIRM) {
+					setActiveMenu(GameManager.getInstance().getMainMenu());
+					gameMode = GameMode.WORLD_MAP;
+				}
+			}
 		} catch (InvalidMoveException ex) {
 			System.out.println(ex.getError());
+			if (!"Invalid Move".equals(ex.getError()))
+				message = ex.getError();
 		} catch (Menu newMenu) {
 			setActiveMenu(newMenu);
 			SoundPlayer.play(SoundEffect.MENU_SELECT);
@@ -171,7 +185,8 @@ public class GameController extends KeyAdapter {
 		} catch (GameMessage gameMessage) {
 			message = gameMessage.getMessage();
 			boolean menuTiedToBattleAction = activeMenu instanceof InventoryMenu || activeMenu instanceof HealMenu
-					|| activeMenu instanceof AttackMenu || activeMenu instanceof PartyMenu;
+					|| activeMenu instanceof ReviveMenu || activeMenu instanceof AttackMenu
+					|| activeMenu instanceof PartyMenu;
 			if (returnToBattle && menuTiedToBattleAction && battle != null && battle.isActive()) {
 				setActiveMenu(GameManager.getInstance().getBattleMenu());
 				gameMode = GameMode.BATTLE;
@@ -182,12 +197,21 @@ public class GameController extends KeyAdapter {
 		onChange.run();
 	}
 
-	private void startBattle(boolean escapable) {
-		enemyType = EnemyType.random();
+	private void startBattle(boolean escapable, MapCoordinate sourceNpc) {
+		TrainerType trainerType = sourceNpc != null ? TrainerType.forRoomId(sourceNpc.mapId) : null;
+		Combatant enemyCombatant;
+		if (trainerType != null) {
+			enemyType = trainerType.getSpriteType();
+			enemyCombatant = trainerType.newCombatant();
+		} else {
+			enemyType = EnemyType.random();
+			enemyCombatant = enemyType.newCombatant();
+		}
 		battle = new Battle(
 			GameManager.getInstance().getParty(),
-			enemyType.newCombatant(),
-			escapable
+			enemyCombatant,
+			escapable,
+			sourceNpc
 		);
 		GameManager.getInstance().setBattle(battle);
 		setActiveMenu(GameManager.getInstance().getBattleMenu());
@@ -197,9 +221,13 @@ public class GameController extends KeyAdapter {
 	private void returnToWorldIfBattleEnded() {
 		if (battle == null || battle.isActive())
 			return;
+		MapCoordinate sourceNpc = battle.getSourceNpc();
 		if (battle.getState() == BattleState.PLAYER_LOST) {
 			message = battle.getPlayer().getName() + " was defeated by " + battle.getEnemy().getName() + "!";
 			gameMode = GameMode.GAME_OVER;
+		} else if (battle.getState() == BattleState.PLAYER_WON
+				&& sourceNpc != null && TrainerType.isFinalTrainerRoom(sourceNpc.mapId)) {
+			gameMode = GameMode.GAME_COMPLETE;
 		} else {
 			setActiveMenu(GameManager.getInstance().getMainMenu());
 			gameMode = GameMode.WORLD_MAP;

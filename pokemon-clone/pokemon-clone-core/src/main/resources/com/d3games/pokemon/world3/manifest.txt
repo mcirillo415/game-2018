@@ -1,0 +1,15 @@
+town=town.txt
+outpost=outpost.txt
+crossroads=crossroads.txt
+corridor_3=corridor_3.txt
+corridor_4=corridor_4.txt
+corridor_5=corridor_5.txt
+corridor_6=corridor_6.txt
+corridor_7=corridor_7.txt
+corridor_8=corridor_8.txt
+corridor_9=corridor_9.txt
+corridor_10=corridor_10.txt
+hometown=hometown.txt
+house1=house1.txt
+house2=house2.txt
+house3=house3.txt

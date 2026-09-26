@@ -32,6 +32,7 @@ public class MenuCreator {
 		mainMenu.add("Items", items);
 		Save save = new Save();
 		mainMenu.add("Save", save);
+		mainMenu.add("Load", new Load());
 		GameManager.getInstance().setMainMenu(mainMenu);
 	}
 

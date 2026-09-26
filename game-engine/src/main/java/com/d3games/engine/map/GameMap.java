@@ -7,6 +7,7 @@ public class GameMap {
 	private int height = 0;
 	private Unit[][] map;
 	String worldName;
+	private String roomName;
 
 	public GameMap(int id, int x, int y) {
 		this.id = id;
@@ -31,12 +32,25 @@ public class GameMap {
 		return worldName;
 	}
 
+	public String getRoomName() {
+		return roomName;
+	}
+
+	public void setRoomName(String roomName) {
+		this.roomName = roomName;
+	}
+
 	public void add(Unit unit, int x, int y) {
 		if (map[x][y] != null)
 			throw new InvalidMapSetupException();
 		map[x][y] = unit;
 		unit.setLocation(this, x, y);
 		size++;
+	}
+
+	public void replace(Unit unit, int x, int y) {
+		map[x][y] = unit;
+		unit.setLocation(this, x, y);
 	}
 
 	public int getWidth() {

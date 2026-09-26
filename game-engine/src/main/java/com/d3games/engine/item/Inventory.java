@@ -27,4 +27,10 @@ public class Inventory {
 			throw new IllegalArgumentException("Cannot add a negative amount");
 		counts.put(type, getCount(type) + amount);
 	}
+
+	public void setCount(ItemType type, int amount) {
+		if (amount < 0)
+			throw new IllegalArgumentException("Count cannot be negative");
+		counts.put(type, amount);
+	}
 }

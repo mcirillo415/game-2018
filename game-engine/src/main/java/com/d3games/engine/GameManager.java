@@ -10,9 +10,12 @@ import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.battle.ElementType;
 import com.d3games.engine.battle.Move;
 import com.d3games.engine.battle.Party;
+import com.d3games.engine.battle.StatusEffect;
 import com.d3games.engine.item.Inventory;
+import com.d3games.engine.item.KeyRing;
 import com.d3games.engine.item.Wallet;
 import com.d3games.engine.map.GameMap;
+import com.d3games.engine.map.MapCoordinate;
 import com.d3games.engine.map.Player;
 import com.d3games.engine.menu.Menu;
 
@@ -32,6 +35,11 @@ public class GameManager {
 	private boolean battlePending;
 	private boolean pendingBattleEscapable = true;
 	private boolean shopPending;
+	private String pendingMessage;
+	private List<MapCoordinate> collectedPickups = new ArrayList<MapCoordinate>();
+	private List<MapCoordinate> defeatedNpcs = new ArrayList<MapCoordinate>();
+	private KeyRing keyRing;
+	private MapCoordinate pendingSourceNpc;
 
 	private GameManager() {
 		
@@ -41,6 +49,31 @@ public class GameManager {
 		if (manager == null)
 			manager = new GameManager();
 		return manager;
+	}
+
+	/**
+	 * Resets every piece of singleton state back to a pristine, just-started slate. Only meant for
+	 * tests that need real, hardcoded map ids (e.g. loading the actual game world) to land at the
+	 * exact indices they declare, which only holds if no other test has already populated the list.
+	 */
+	public void resetForTesting() {
+		maps = new ArrayList<GameMap>();
+		player = null;
+		party = null;
+		inventory = null;
+		wallet = null;
+		battle = null;
+		mainMenu = null;
+		battleMenu = null;
+		activeMenu = null;
+		battlePending = false;
+		pendingBattleEscapable = true;
+		shopPending = false;
+		pendingMessage = null;
+		collectedPickups = new ArrayList<MapCoordinate>();
+		defeatedNpcs = new ArrayList<MapCoordinate>();
+		keyRing = null;
+		pendingSourceNpc = null;
 	}
 
 	public void add(GameMap map) {
@@ -73,7 +106,7 @@ public class GameManager {
 			starter.setMoves(Arrays.asList(
 					new Move("Tackle", ElementType.NORMAL, 1.0, 0, 0, 0),
 					new Move("Power Bite", ElementType.NORMAL, 1.5, 0.15, 0, 0),
-					new Move("Quick Nip", ElementType.NORMAL, 0.6, 0, 0, 0.4),
+					new Move("Quick Nip", ElementType.NORMAL, 0.6, 0, 0, 0.4, StatusEffect.PARALYSIS, 0.3),
 					new Move("Leech Bite", ElementType.NORMAL, 0.7, 0, 0.5, 0)));
 			party = new Party(starter);
 		}
@@ -86,6 +119,10 @@ public class GameManager {
 
 	public void setBattle(Battle battle) {
 		this.battle = battle;
+	}
+
+	public void setParty(Party party) {
+		this.party = party;
 	}
 
 	public Menu getMainMenu() {
@@ -110,12 +147,20 @@ public class GameManager {
 		return inventory;
 	}
 
+	public void setInventory(Inventory inventory) {
+		this.inventory = inventory;
+	}
+
 	public Wallet getWallet() {
 		if (wallet == null) {
 			wallet = new Wallet();
 			wallet.add(STARTING_BONES);
 		}
 		return wallet;
+	}
+
+	public void setWallet(Wallet wallet) {
+		this.wallet = wallet;
 	}
 
 	public Menu getActiveMenu() {
@@ -131,8 +176,13 @@ public class GameManager {
 	}
 
 	public void triggerBattle(boolean escapable) {
+		triggerBattle(escapable, null);
+	}
+
+	public void triggerBattle(boolean escapable, MapCoordinate sourceNpc) {
 		battlePending = true;
 		pendingBattleEscapable = escapable;
+		pendingSourceNpc = sourceNpc;
 	}
 
 	public boolean isBattlePending() {
@@ -143,8 +193,13 @@ public class GameManager {
 		return pendingBattleEscapable;
 	}
 
+	public MapCoordinate getPendingSourceNpc() {
+		return pendingSourceNpc;
+	}
+
 	public void clearPendingBattle() {
 		battlePending = false;
+		pendingSourceNpc = null;
 	}
 
 	public void triggerShop() {
@@ -157,5 +212,58 @@ public class GameManager {
 
 	public void clearPendingShop() {
 		shopPending = false;
+	}
+
+	public void triggerMessage(String message) {
+		pendingMessage = message;
+	}
+
+	public boolean isMessagePending() {
+		return pendingMessage != null;
+	}
+
+	public String consumePendingMessage() {
+		String message = pendingMessage;
+		pendingMessage = null;
+		return message;
+	}
+
+	public void recordPickupCollected(int mapId, int x, int y) {
+		collectedPickups.add(new MapCoordinate(mapId, x, y));
+	}
+
+	public List<MapCoordinate> getCollectedPickups() {
+		return collectedPickups;
+	}
+
+	public void clearCollectedPickups() {
+		collectedPickups.clear();
+	}
+
+	public void recordNpcDefeated(MapCoordinate npc) {
+		if (!defeatedNpcs.contains(npc))
+			defeatedNpcs.add(npc);
+	}
+
+	public boolean isNpcDefeated(MapCoordinate npc) {
+		return defeatedNpcs.contains(npc);
+	}
+
+	public List<MapCoordinate> getDefeatedNpcs() {
+		return defeatedNpcs;
+	}
+
+	public void clearDefeatedNpcs() {
+		defeatedNpcs.clear();
+	}
+
+	public KeyRing getKeyRing() {
+		if (keyRing == null)
+			keyRing = new KeyRing();
+		return keyRing;
+	}
+
+	public void setKeyRing(KeyRing keyRing) {
+		this.keyRing = keyRing;
 	}
 }

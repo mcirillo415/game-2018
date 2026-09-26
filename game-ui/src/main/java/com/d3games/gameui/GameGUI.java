@@ -19,7 +19,7 @@ public class GameGUI extends JFrame {
 		MapCreator.getInstance();
 		MenuCreator.getInstance();
 		try {
-			MapCreator.getInstance().generateMap(world);
+			MapCreator.getInstance().generateWorld(world);
 			MenuCreator.getInstance().generateMenu();
 			MenuCreator.getInstance().generateBattleMenu();
 			add(new GameScreen(skipTitleScreen));

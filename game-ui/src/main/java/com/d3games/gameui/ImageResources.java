@@ -5,7 +5,9 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.d3games.engine.map.DialogueNPC;
 import com.d3games.engine.map.Door;
+import com.d3games.engine.map.HealerNPC;
 import com.d3games.engine.map.ItemPickup;
 import com.d3games.engine.map.NPC;
 import com.d3games.engine.map.Obstacle;
@@ -29,6 +31,8 @@ public class ImageResources {
 	static {
 		put(NPC.class, new CharacterImage(getURL("characters/npc/dog.png")));
 		put(ShopNPC.class, new CharacterImage(getURL("characters/npc/shopkeeper.png")));
+		put(DialogueNPC.class, new CharacterImage(getURL("characters/npc/villager.png")));
+		put(HealerNPC.class, new CharacterImage(getURL("characters/npc/healer.png")));
 		put(Player.class, "characters/player/playerFront.png", "characters/player/playerBack.png",
 				"characters/player/playerLeft.png", "characters/player/playerRight.png");
 	}

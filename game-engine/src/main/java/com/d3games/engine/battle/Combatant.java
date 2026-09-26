@@ -14,6 +14,8 @@ public class Combatant {
 	private static final int LEVEL_UP_HEALTH_GAIN = 10;
 	private static final int LEVEL_UP_ATTACK_GAIN = 3;
 	private static final int LEVEL_UP_DEFENSE_GAIN = 1;
+	private static final int POISON_DAMAGE_DIVISOR = 8;
+	private static final int BURN_DAMAGE_DIVISOR = 16;
 
 	private static final Move DEFAULT_MOVE = new Move("Tackle", ElementType.NORMAL, 1.0, 0, 0, 0);
 
@@ -27,6 +29,7 @@ public class Combatant {
 	private int experienceToNextLevel;
 	private ElementType elementType = ElementType.NORMAL;
 	private List<Move> moves = new ArrayList<Move>(Collections.singletonList(DEFAULT_MOVE));
+	private StatusEffect status = StatusEffect.NONE;
 
 	public Combatant(String name, int maximumHealth) {
 		this(name, maximumHealth, 20, 0);
@@ -68,6 +71,7 @@ public class Combatant {
 		this.experienceToNextLevel = other.experienceToNextLevel;
 		this.elementType = other.elementType;
 		this.moves = new ArrayList<Move>(other.moves);
+		this.status = other.status;
 	}
 
 	public String getName() {
@@ -126,6 +130,26 @@ public class Combatant {
 		this.moves = new ArrayList<Move>(moves);
 	}
 
+	public StatusEffect getStatus() {
+		return status;
+	}
+
+	public void setStatus(StatusEffect status) {
+		this.status = status;
+	}
+
+	public int applyStatusDamage() {
+		int damage;
+		if (status == StatusEffect.POISON)
+			damage = Math.max(1, maximumHealth / POISON_DAMAGE_DIVISOR);
+		else if (status == StatusEffect.BURN)
+			damage = Math.max(1, maximumHealth / BURN_DAMAGE_DIVISOR);
+		else
+			return 0;
+		takeDamage(damage);
+		return damage;
+	}
+
 	public boolean isFainted() {
 		return health == 0;
 	}
@@ -134,12 +158,26 @@ public class Combatant {
 		if (damage < 0)
 			throw new IllegalArgumentException("Damage cannot be negative");
 		health = Math.max(0, health - damage);
+		if (health == 0)
+			status = StatusEffect.NONE;
 	}
 
 	public void heal(int amount) {
 		if (amount < 0)
 			throw new IllegalArgumentException("Healing cannot be negative");
 		health = Math.min(maximumHealth, health + amount);
+	}
+
+	public void setHealth(int health) {
+		if (health < 0 || health > maximumHealth)
+			throw new IllegalArgumentException("Health must be between 0 and maximum health");
+		this.health = health;
+	}
+
+	public void setExperience(int experience) {
+		if (experience < 0)
+			throw new IllegalArgumentException("Experience cannot be negative");
+		this.experience = experience;
 	}
 
 	public int gainExperience(int amount) {

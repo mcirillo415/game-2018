@@ -7,17 +7,18 @@ import java.util.Random;
 import com.d3games.engine.battle.Combatant;
 import com.d3games.engine.battle.ElementType;
 import com.d3games.engine.battle.Move;
+import com.d3games.engine.battle.StatusEffect;
 
 public enum EnemyType {
 	ANGRY_DOG("Angry Dog", 80, 10, 0, 1, "characters/enemies/angryDog.png", ElementType.FIRE, Arrays.asList(
 			new Move("Bite", ElementType.NORMAL, 1.0, 0, 0, 0),
-			new Move("Flame Snap", ElementType.FIRE, 1.3, 0, 0, 0))),
+			new Move("Flame Snap", ElementType.FIRE, 1.3, 0, 0, 0, StatusEffect.BURN, 0.3))),
 	ICE_DOG("Ice Dog", 70, 8, 4, 2, "characters/enemies/iceDog.png", ElementType.ICE, Arrays.asList(
 			new Move("Bite", ElementType.NORMAL, 1.0, 0, 0, 0),
 			new Move("Frost Bite", ElementType.ICE, 1.3, 0, 0, 0))),
 	WILD_DOG("Wild Dog", 90, 14, 1, 3, "characters/enemies/wildDog.png", ElementType.NORMAL, Arrays.asList(
 			new Move("Bite", ElementType.NORMAL, 1.0, 0, 0, 0),
-			new Move("Savage Bite", ElementType.NORMAL, 1.4, 0.1, 0, 0))),
+			new Move("Savage Bite", ElementType.NORMAL, 1.4, 0.1, 0, 0, StatusEffect.POISON, 0.3))),
 	WATER_DOG("Water Dog", 75, 9, 2, 2, "characters/enemies/waterDog.png", ElementType.WATER, Arrays.asList(
 			new Move("Bite", ElementType.NORMAL, 1.0, 0, 0, 0),
 			new Move("Water Snap", ElementType.WATER, 1.3, 0, 0, 0)));

@@ -69,8 +69,11 @@ public class GameScreen extends JPanel {
 
 		String worldName = playerMap.getWorldName();
 		if (worldName != null && !worldName.isEmpty()) {
+			String roomLabel = playerMap.getRoomName() != null
+					? playerMap.getRoomName()
+					: "Map " + playerMap.getId();
 			g2d.setColor(Color.WHITE);
-			g2d.drawString(worldName + " - Map " + playerMap.getId(), MARGIN + 5, 22);
+			g2d.drawString(worldName + " - " + roomLabel, MARGIN + 5, 22);
 		}
 
 		g2d.setColor(Color.WHITE);
@@ -85,6 +88,8 @@ public class GameScreen extends JPanel {
 			paintBattleMenu(controller.getActiveMenu(), g2d);
 		} else if (gameMode == GameMode.GAME_OVER) {
 			paintGameOver(g2d);
+		} else if (gameMode == GameMode.GAME_COMPLETE) {
+			paintGameComplete(g2d);
 		}
 
 		String message = controller.getMessage();
@@ -139,6 +144,17 @@ public class GameScreen extends JPanel {
 		g2d.drawString("GAME OVER", MARGIN + 80, MARGIN + 120);
 		g2d.setColor(Color.WHITE);
 		g2d.drawString("Press CONFIRM to continue", MARGIN + 50, MARGIN + 150);
+	}
+
+	private void paintGameComplete(Graphics2D g2d) {
+		g2d.setColor(Color.BLACK);
+		g2d.fillRect(MARGIN + 5, MARGIN + 5, MAIN_BOX_SIZE - 10, MAIN_BOX_SIZE - 10);
+		g2d.setColor(Color.GREEN);
+		g2d.drawString("GAME COMPLETE!", MARGIN + 55, MARGIN + 110);
+		g2d.setColor(Color.WHITE);
+		g2d.drawString("You defeated every corridor", MARGIN + 45, MARGIN + 135);
+		g2d.drawString("trainer!", MARGIN + 95, MARGIN + 152);
+		g2d.drawString("Press CONFIRM to continue", MARGIN + 50, MARGIN + 177);
 	}
 
 	private void paintBattleMenu(Menu activeMenu, Graphics2D g2d) {
